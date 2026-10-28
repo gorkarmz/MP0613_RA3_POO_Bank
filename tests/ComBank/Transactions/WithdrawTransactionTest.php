@@ -1,13 +1,12 @@
 <?php
-use PHPUnit\Framework\TestCase;
+
 use ComBank\Bank\BankAccount;
-use ComBank\OverdraftStrategy\Contracts\OverdraftInterface;
-use ComBank\OverdraftStrategy\SilverOverdraft;
-use ComBank\Exceptions\BankAccountException;
-use ComBank\Bank\Contracts\BankAccountInterface;
-use ComBank\Transactions\WithdrawTransaction;
 use ComBank\Exceptions\InvalidOverdraftFundsException;
 use ComBank\Exceptions\ZeroAmountException;
+use ComBank\OverdraftStrategy\SilverOverdraft;
+use ComBank\Transactions\WithdrawTransaction;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Created by VS Code.
@@ -18,82 +17,58 @@ use ComBank\Exceptions\ZeroAmountException;
 
 class WithdrawTransactionTest extends TestCase
 {
-
-    /**
-     * @test
-     * */
-    public function testWithdrawTransactionMoreThanBalance()
-    {     
-
+    public function testWithdrawTransactionLessThanBalance()
+    {
         $bankAccount = new BankAccount(150.0);
-        $amount = 50;
-        $trans = new WithdrawTransaction($amount);
+        $trans = new WithdrawTransaction(50);
         $newBalance = $trans->applyTransaction($bankAccount);
-        $this->assertEquals(100,$newBalance);
+        $this->assertEquals(100, $newBalance);
     }
-    /**
-     * @test
-     * @expectedException ComBank\Exceptions\InvalidOverdraftFundsException
-     * */
-    public function testWithdrawTransactionLessThanBalanceNoOverdraft()
+
+    public function testWithdrawTransactionMoreThanBalanceNoOverdraft()
     {
         $this->expectException(InvalidOverdraftFundsException::class);
 
         $bankAccount = new BankAccount(100.0);
-
-        $amount = 150;
-        $trans = new WithdrawTransaction($amount);
-        $newBalance = $trans->applyTransaction($bankAccount);
-        $this->assertEquals(100,$newBalance);
+        $trans = new WithdrawTransaction(150);
+        $trans->applyTransaction($bankAccount);
     }
-    /**
-     * @test
-     * */
-    public function testWithdrawTransactionLessThanBalanceWithOverdraft()
+
+    public function testWithdrawTransactionMoreThanBalanceWithOverdraft()
     {
         $bankAccount = new BankAccount(100.0);
         $bankAccount->applyOverdraft(new SilverOverdraft());
 
-        $amount = 150;
-        $trans = new WithdrawTransaction($amount);
+        $trans = new WithdrawTransaction(150);
         $newBalance = $trans->applyTransaction($bankAccount);
-        $this->assertEquals(-50,$newBalance);
+        $this->assertEquals(-50, $newBalance);
     }
-    /**
-     * @test
-     * @dataProvider invalidAmountProvider
-     * @expectedException ComBank\Exceptions\InvalidArgsException
-     * */
+
+    #[DataProvider('invalidAmountProvider')]
     public function testInvalidAmount($amount)
     {
         $this->expectException(ZeroAmountException::class);
         new WithdrawTransaction($amount);
     }
-    
-    /**
-     * @test
-     * */
+
     public function testTransactionInfo()
     {
         $trans = new WithdrawTransaction(22.0);
-        $this->assertEquals('WITHDRAW_TRANSACTION',$trans->getTransactionInfo());
+        $this->assertEquals('WITHDRAW_TRANSACTION', $trans->getTransactionInfo());
     }
-    /**
-     * @test
-     * */
-    public function testGetAmount(){
+
+    public function testGetAmount()
+    {
         $trans = new WithdrawTransaction(100.25);
-        $this->assertEquals(100.25,$trans->getAmount());
+        $this->assertEquals(100.25, $trans->getAmount());
     }
-    /**
-     * @return array;
-     * */
-    public function invalidAmountProvider()
+
+    public static function invalidAmountProvider(): array
     {
         return [
-            [-100],   // Negative value
-            [-0.01],  // Small negative value
-            [0]       // Zero amount
+            'negative'       => [-100],
+            'small negative' => [-0.01],
+            'zero'           => [0],
         ];
-    }   
+    }
 }

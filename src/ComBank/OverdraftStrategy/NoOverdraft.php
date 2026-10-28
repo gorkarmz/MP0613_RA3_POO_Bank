@@ -7,8 +7,20 @@
  * Time: 12:27 PM
  */
 
-class NoOverdraft 
+use ComBank\OverdraftStrategy\Contracts\OverdraftInterface;
+
+class NoOverdraft implements OverdraftInterface
 {
 
+    public function isGrantOverdraftFunds(float $newamount): bool
+    {
+        return ($this->getOverdraftFundsAmount() + $newamount) >= 0;
+    }
+
    
+    public function getOverdraftFundsAmount(): float
+    {
+        return 0.0;
+    }
+
 }

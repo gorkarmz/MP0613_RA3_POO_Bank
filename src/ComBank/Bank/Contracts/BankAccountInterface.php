@@ -17,5 +17,19 @@ interface BankAccountInterface
     const STATUS_OPEN = 'OPEN';
     const STATUS_CLOSED = 'CLOSED';
 
-   
+    public function getBalance(): float;
+
+    public function setBalance(float $balance): void;
+
+    public function closeAccount(): void;
+
+    public function reopenAccount(): void;
+
+    public function isOpen(): bool;
+
+    public function transaction(BankTransactionInterface $transaction): void;
+
+    public function getOverdraft(): OverdraftInterface;
+
+    public function applyOverdraft(OverdraftInterface $overdraft): void;
 }
