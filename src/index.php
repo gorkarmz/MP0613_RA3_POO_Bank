@@ -8,8 +8,11 @@
  */
 
 use ComBank\Bank\BankAccount;
+use ComBank\OverdraftStrategy\GoldOverdraft;
+use ComBank\OverdraftStrategy\NoOverdraft;
 use ComBank\OverdraftStrategy\SilverOverdraft;
 use ComBank\Transactions\DepositTransaction;
+use ComBank\Transactions\InterestTransaction;
 use ComBank\Transactions\WithdrawTransaction;
 use ComBank\Exceptions\BankAccountException;
 use ComBank\Exceptions\FailedTransactionException;
@@ -124,3 +127,23 @@ try {
 } catch (BankAccountException $e) {
     pl($e->getMessage());
 }
+
+
+$bankAccount3 = new BankAccount(1000.0);
+pl('Initial balance: ' . $bankAccount3->getBalance());
+$bankAccount3->applyOverdraft(new NoOverdraft());
+$bankAccount3->transaction(new InterestTransaction());
+pl('Balance after interest transaction (1%): ' . $bankAccount3->getBalance());
+
+
+$bankAccount4 = new BankAccount(1000.0);
+pl('Initial balance: ' . $bankAccount4->getBalance());
+$bankAccount4->applyOverdraft(new SilverOverdraft());
+$bankAccount4->transaction(new InterestTransaction());
+pl('Balance after interest transaction (5%): ' . $bankAccount4->getBalance());
+
+$bankAccount5 = new BankAccount(1000.0);
+pl('Initial balance: ' . $bankAccount5->getBalance());
+$bankAccount5->applyOverdraft(new GoldOverdraft());
+$bankAccount5->transaction(new InterestTransaction());
+pl('Balance after interest transaction (10%): ' . $bankAccount5->getBalance());
