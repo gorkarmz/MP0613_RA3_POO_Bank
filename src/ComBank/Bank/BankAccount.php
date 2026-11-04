@@ -22,18 +22,23 @@ use ComBank\Transactions\Contracts\BankTransactionInterface;
 
 class BankAccount implements BankAccountInterface
 {
+    use AmountValidationTrait;
+
     private $balance;
     private $status;
     private OverdraftInterface $overdraft;
+    private string $email = '';
 
-    public function __construct($balance)
+    public function __construct(float $balance, ?string $email = null)
     {
         $this->balance = $balance;
         $this->status = true;
         $this->overdraft = new NoOverdraft();
+        if ($email !== null) {
+            $this->setEmail($email);
+        }
     }
 
-  
     public function getBalance(): float
     {
         return $this->balance;
@@ -97,5 +102,16 @@ class BankAccount implements BankAccountInterface
         } catch (InvalidOverdraftFundsException $e) {
             throw new FailedTransactionException($e->getMessage(), $e->getCode(), $e);
         }
+    }
+
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(string $email): void
+    {
+        $this->validateEmail($email);
+        $this->email = $email;
     }
 }

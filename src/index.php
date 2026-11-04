@@ -16,6 +16,7 @@ use ComBank\Transactions\InterestTransaction;
 use ComBank\Transactions\WithdrawTransaction;
 use ComBank\Exceptions\BankAccountException;
 use ComBank\Exceptions\FailedTransactionException;
+use ComBank\Exceptions\InvalidArgsException;
 use ComBank\Exceptions\ZeroAmountException;
 
 require_once 'bootstrap.php';
@@ -23,13 +24,14 @@ require_once 'bootstrap.php';
 
 //---[Bank account 1]---/
 // create a new account1 with balance 400
-$bankAccount1 = new BankAccount(400);
+$bankAccount1 = new BankAccount(400, 'john.smith@example.com');
 
 
 pl('--------- [Start testing bank account #1, No overdraft] --------');
 try {
     // show balance account
     pl('My balance: ' . $bankAccount1->getBalance());
+    pl('My email: ' . $bankAccount1->getEmail());
     // close account
     $bankAccount1->closeAccount();
     // reopen account
@@ -68,64 +70,58 @@ $bankAccount1->closeAccount();
 
 
 //---[Bank account 2]---/
-$bankAccount2 = new BankAccount(200);
 pl('--------- [Start testing bank account #2, Silver overdraft (100.0 funds)] --------');
 try {
+    $bankAccount2 = new BankAccount(200, 'johnexample.com');
 
     pl('My balance: ' . $bankAccount2->getBalance());
+    pl('My email: ' . $bankAccount2->getEmail());
 
     $bankAccount2->closeAccount();
     $bankAccount2->reopenAccount();
 
-
-    //applyOverdraft()
-    //bankAccount2 set overdarft as Silver
     $bankAccount2->applyOverdraft(new SilverOverdraft());
 
-    // show balance account
-
-    // deposit +100
     pl('Doing transaction deposit (+100) with current balance ' . $bankAccount2->getBalance());
     $bankAccount2->transaction(new DepositTransaction(100));
 
-
     pl('My new balance after deposit (+100) : ' . $bankAccount2->getBalance());
 
-    // withdrawal -300
     pl('Doing transaction deposit (-300) with current balance ' . $bankAccount2->getBalance());
-
     $bankAccount2->transaction(new WithdrawTransaction(300));
-
 
     pl('My new balance after withdrawal (-300) : ' . $bankAccount2->getBalance());
 
-    // withdrawal -50
     pl('Doing transaction deposit (-50) with current balance ' . $bankAccount2->getBalance());
     $bankAccount2->transaction(new WithdrawTransaction(50));
 
     pl('My new balance after withdrawal (-50) with funds : ' . $bankAccount2->getBalance());
 
-    // withdrawal -120
     pl('Doing transaction withdrawal (-120) with current balance ' . $bankAccount2->getBalance());
     $bankAccount2->transaction(new WithdrawTransaction(120));
-} catch (FailedTransactionException $e) {
-    pl('Error transaction: ' . $e->getMessage());
-}
-pl('My balance after failed last transaction : ' . $bankAccount2->getBalance());
-
-try {
-    pl('Doing transaction withdrawal (-20) with current balance : ' . $bankAccount2->getBalance());
-    $bankAccount2->transaction(new WithdrawTransaction(20));
-} catch (FailedTransactionException $e) {
-    pl('Error transaction: ' . $e->getMessage());
-}
-pl('My new balance after withdrawal (-20) with funds : ' . $bankAccount2->getBalance());
-
-try {
-    $bankAccount2->closeAccount();
-    $bankAccount2->closeAccount();
-} catch (BankAccountException $e) {
+} catch (InvalidArgsException $e) {
     pl($e->getMessage());
+} catch (FailedTransactionException $e) {
+    pl('Error transaction: ' . $e->getMessage());
+}
+
+if (isset($bankAccount2)) {
+    pl('My balance after failed last transaction : ' . $bankAccount2->getBalance());
+
+    try {
+        pl('Doing transaction withdrawal (-20) with current balance : ' . $bankAccount2->getBalance());
+        $bankAccount2->transaction(new WithdrawTransaction(20));
+    } catch (FailedTransactionException $e) {
+        pl('Error transaction: ' . $e->getMessage());
+    }
+    pl('My new balance after withdrawal (-20) with funds : ' . $bankAccount2->getBalance());
+
+    try {
+        $bankAccount2->closeAccount();
+        $bankAccount2->closeAccount();
+    } catch (BankAccountException $e) {
+        pl($e->getMessage());
+    }
 }
 
 
