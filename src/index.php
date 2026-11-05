@@ -8,6 +8,7 @@
  */
 
 use ComBank\Bank\BankAccount;
+use ComBank\Bank\Contracts\BankAccountInterface;
 use ComBank\OverdraftStrategy\GoldOverdraft;
 use ComBank\OverdraftStrategy\NoOverdraft;
 use ComBank\OverdraftStrategy\SilverOverdraft;
@@ -18,6 +19,7 @@ use ComBank\Exceptions\BankAccountException;
 use ComBank\Exceptions\FailedTransactionException;
 use ComBank\Exceptions\InvalidArgsException;
 use ComBank\Exceptions\ZeroAmountException;
+use ComBank\Transactions\TransferTransaction;
 
 require_once 'bootstrap.php';
 
@@ -143,3 +145,21 @@ pl('Initial balance: ' . $bankAccount5->getBalance());
 $bankAccount5->applyOverdraft(new GoldOverdraft());
 $bankAccount5->transaction(new InterestTransaction());
 pl('Balance after interest transaction (10%): ' . $bankAccount5->getBalance());
+
+
+$destinationAccount1 = new BankAccount(500.0);
+$destinationAccount2 = new BankAccount(200.0);
+
+
+pl('Source Account Balance: ' . $destinationAccount1->getBalance());
+pl('Destination Account Balance: ' . $destinationAccount2->getBalance());
+
+
+$destinationAccount1->transaction(new TransferTransaction(100, $destinationAccount2));
+$destinationAccount2->transaction(new WithdrawTransaction(100));
+
+
+
+
+pl('Source Balance After Transaction: ' . $destinationAccount1->getBalance());
+pl('Destination Balance After Transaction: ' . $destinationAccount2->getBalance());
