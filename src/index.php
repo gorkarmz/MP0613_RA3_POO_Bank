@@ -150,16 +150,11 @@ pl('Balance after interest transaction (10%): ' . $bankAccount5->getBalance());
 $destinationAccount1 = new BankAccount(500.0);
 $destinationAccount2 = new BankAccount(200.0);
 
-
 pl('Source Account Balance: ' . $destinationAccount1->getBalance());
 pl('Destination Account Balance: ' . $destinationAccount2->getBalance());
 
-
+pl('Transfer Amount: 100');
 $destinationAccount1->transaction(new TransferTransaction(100, $destinationAccount2));
-$destinationAccount2->transaction(new WithdrawTransaction(100));
-
-
-
 
 pl('Source Balance After Transaction: ' . $destinationAccount1->getBalance());
 pl('Destination Balance After Transaction: ' . $destinationAccount2->getBalance());
